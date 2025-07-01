@@ -1,1 +1,91 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - Electronic Dukan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>Admin Panel</header>
+  <div class="container">
+    <div id="loginBox">
+      <h3>Admin Login</h3>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="adminPanel" style="display:none;">
+      <h3>Add Product</h3>
+      <input type="text" id="name" placeholder="Product Name">
+      <input type="number" id="price" placeholder="Price">
+      <input type="number" id="stock" placeholder="Stock">
+      <button onclick="addProduct()">Add Product</button>
+
+      <h3>All Products</h3>
+      <ul id="productList"></ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import {
+      collection, addDoc, getDocs, deleteDoc, doc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    function login() {
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
+      if (u === "raees123" && p === "123456") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        loadProducts();
+      } else {
+        alert("Wrong username or password");
+      }
+    }
+
+    async function addProduct() {
+      const name = document.getElementById("name").value;
+      const price = parseInt(document.getElementById("price").value);
+      const stock = parseInt(document.getElementById("stock").value);
+      const available = stock > 0;
+
+      if (name && !isNaN(price)) {
+        await addDoc(collection(db, "products"), {
+          name,
+          price,
+          available
+        });
+        loadProducts();
+      } else {
+        alert("Please enter valid product details.");
+      }
+    }
+
+    async function loadProducts() {
+      const querySnapshot = await getDocs(collection(db, "products"));
+      const list = document.getElementById("productList");
+      list.innerHTML = "";
+
+      querySnapshot.forEach((docSnap) => {
+        const product = docSnap.data();
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${product.name} - ₹${product.price} - ${product.available ? "Available" : "Unavailable"}
+          <button onclick="deleteProduct('${docSnap.id}')">Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function deleteProduct(id) {
+      await deleteDoc(doc(db, "products", id));
+      loadProducts();
+    }
+  </script>
+</body>
+</html>
 
