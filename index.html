@@ -1,1 +1,46 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Electronic Dukan - Products</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>Electronic Dukan</header>
+  <div class="container">
+    <div id="productList" class="product-grid"></div>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import {
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const productList = document.getElementById('productList');
+
+    async function loadProducts() {
+      const querySnapshot = await getDocs(collection(db, 'products'));
+      querySnapshot.forEach((docSnap) => {
+        const product = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        div.innerHTML = `
+          <h3>${product.name}</h3>
+          <p>₹${product.price}</p>
+          <p style="color: ${product.available ? '#2e7d32' : 'red'}">
+            ${product.available ? 'Available' : 'Currently Unavailable'}
+          </p>
+        `;
+        productList.appendChild(div);
+      });
+    }
+
+    window.onload = loadProducts;
+  </script>
+</body>
+</html>
 
